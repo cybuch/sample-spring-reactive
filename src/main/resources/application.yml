@@ -1,0 +1,17 @@
+logbook:
+    exclude:
+        - /health
+        - /admin/**
+    filter.enabled: true
+    format.style: http
+    obfuscate:
+        headers:
+            - Authorization
+            - X-Secret
+        parameters:
+            - access_token
+            - password
+    write:
+        category: LogbookLogger
+        level: INFO
+        chunk-size: 0

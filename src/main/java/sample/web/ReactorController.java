@@ -1,36 +1,49 @@
 package sample.web;
 
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sample.service.ReactorService;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import sample.model.Message;
-import sample.model.MessageAcknowledgement;
+
+import java.util.concurrent.CompletableFuture;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 @RestController
-@RequestMapping("/controller")
 public class ReactorController {
 
-    private final ReactorService aService;
-
-    @Autowired
-    public ReactorController(ReactorService aService) {
-        this.aService = aService;
+    @GetMapping(value = "/syncOk", produces = {APPLICATION_JSON_UTF8_VALUE})
+    ResponseEntity<SampleResponseDto> syncOk() {
+        return ResponseEntity.ok(new SampleResponseDto());
     }
 
-    @RequestMapping(path = "/handleMessageReactor", method = RequestMethod.POST)
-    public Mono<MessageAcknowledgement> handleMessage(@RequestBody Message message) {
-        return this.aService.handleMessageMono(message);
+    @GetMapping(value = "/syncNotFound", produces = {APPLICATION_JSON_UTF8_VALUE})
+    ResponseEntity<SampleResponseDto> syncNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new SampleResponseDto());
     }
 
-    @RequestMapping(path = "/handleMessageReactorFlux", method = RequestMethod.POST)
-    public Flux<MessageAcknowledgement> handleMessageFlux(@RequestBody Message message) {
-        return this.aService.handleMessageFlux(message);
+    @GetMapping(value = "/asyncOk", produces = {APPLICATION_JSON_UTF8_VALUE})
+    CompletableFuture<ResponseEntity<SampleResponseDto>> asyncOk() {
+        return Mono.just(
+                ResponseEntity.ok(new SampleResponseDto())
+        ).toFuture();
     }
 
+    @GetMapping(value = "/asyncNotFound", produces = {APPLICATION_JSON_UTF8_VALUE})
+    CompletableFuture<ResponseEntity<SampleResponseDto>> asyncNotFound() {
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new SampleResponseDto())
+        ).toFuture();
+    }
+
+    private static class SampleResponseDto {
+        final String myBody = "Sample response body";
+
+        public String getMyBody() {
+            return myBody;
+        }
+    }
 }
